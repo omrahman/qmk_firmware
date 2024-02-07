@@ -6,15 +6,15 @@
 #include "features/achordion.h"
 
 enum layers {
-  QBASE, // QWERTY Base Layer
-  CBASE, // COLEMAK-DH Base Layer
-  SYM,   // Symbol Layer
-  NAV,   // Navigation Layer
-  ADJ,   // Adjust Layer
+    QBASE, // QWERTY Base Layer
+    CBASE, // COLEMAK-DH Base Layer
+    SYM,   // Symbol Layer
+    NAV,   // Navigation Layer
+    ADJ,   // Adjust Layer
 };
 
 enum custom_keycodes {
-  EXIT = SAFE_RANGE,
+    EXIT = SAFE_RANGE,
 };
 
 // Home row mods for QWERTY layer.
@@ -159,102 +159,124 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t* record) {
-  switch (keycode) {
-    // Increase the tapping term a little for slower ring and pinky fingers.
-    case CHOME_A:
-    case CHOME_R:
-    case CHOME_I:
-    case CHOME_O:
-    // case QHOME_A: // Same as `CHOME_A`
-    case QHOME_S:
-    case QHOME_L:
-    case QHOME_SC:
-      return TAPPING_TERM + 15;
+    switch (keycode) {
+        // Increase the tapping term a little for slower ring and pinky fingers.
+        case CHOME_A:
+        case CHOME_R:
+        case CHOME_I:
+        case CHOME_O:
+        // case QHOME_A: // Same as `CHOME_A`
+        case QHOME_S:
+        case QHOME_L:
+        case QHOME_SC:
+            return TAPPING_TERM + 15;
 
-    default:
-      return TAPPING_TERM;
-  }
+        default:
+            return TAPPING_TERM;
+    }
 }
 
 uint16_t get_quick_tap_term(uint16_t keycode, keyrecord_t* record) {
-  // If you quickly hold a tap-hold key after tapping it, the tap action is
-  // repeated. Key repeating is useful e.g. for Vim navigation keys, but can
-  // lead to missed triggers in fast typing. Here, returning 0 means we
-  // instead want to "force hold" and disable key repeating.
-  switch (keycode) {
-    case CHOME_N:
-    case CHOME_E:
-    case CHOME_I:
-    // Repeating is useful for Vim navigation keys.
-    case QHOME_J:
-    case QHOME_K:
-    case QHOME_L:
-      return QUICK_TAP_TERM;  // Enable key repeating.
-    default:
-      return 0;  // Otherwise, force hold and disable key repeating.
-  }
+    // If you quickly hold a tap-hold key after tapping it, the tap action is
+    // repeated. Key repeating is useful e.g. for Vim navigation keys, but can
+    // lead to missed triggers in fast typing. Here, returning 0 means we
+    // instead want to "force hold" and disable key repeating.
+    switch (keycode) {
+        case CHOME_N:
+        case CHOME_E:
+        case CHOME_I:
+        // Repeating is useful for Vim navigation keys.
+        case QHOME_J:
+        case QHOME_K:
+        case QHOME_L:
+            return QUICK_TAP_TERM; // Enable key repeating.
+        default:
+            return 0; // Otherwise, force hold and disable key repeating.
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-#define ACHORDION_STREAK
-uint16_t achordion_streak_timeout(uint16_t tap_hold_keycode){
-   if (IS_QK_LAYER_TAP(tap_hold_keycode)) {
-      return 0; // Disable streak detection on layer-tap keys.
-   }
+uint16_t achordion_streak_timeout(uint16_t tap_hold_keycode) {
+    if (IS_QK_LAYER_TAP(tap_hold_keycode)) {
+        return 0; // Disable streak detection on layer-tap keys.
+    }
 
-   // Otherwise, tap_hold_keycode is a mod-tap key.
-   uint8_t mod = mod_config(QK_MOD_TAP_GET_MODS(tap_hold_keycode));
-   if ((mod & MOD_LSFT) != 0) {
-      return 0;  // Disable for Shift mod-tap keys.
-   } else {
-      return 100;
-   }
+    // Otherwise, tap_hold_keycode is a mod-tap key.
+    uint8_t mod = mod_config(QK_MOD_TAP_GET_MODS(tap_hold_keycode));
+    if ((mod & MOD_LSFT) != 0) {
+        return 0; // Disable for Shift mod-tap keys.
+    } else {
+        return 100;
+    }
 }
 
 uint16_t achordion_timeout(uint16_t tap_hold_keycode) {
-  return 800;  // Use a timeout of 800 ms.
+    return 800; // Use a timeout of 800 ms.
 }
 
-bool achordion_chord(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record,
+bool achordion_chord(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record, 
                      uint16_t other_keycode, keyrecord_t* other_record) {
-  // Exceptionally consider the following chords as holds, even though they
-  // are on the same hand in Magic Sturdy.
-  //   switch (tap_hold_keycode) {
-  //     case HOME_X:  // X + D and X + G.
-  //       if (other_keycode == HOME_D || other_keycode == KC_G) {
-  //         return true;
-  //       }
-  //       break;
-  //   }
+    // Exceptionally consider the following chords as holds, even though they
+    // are on the same hand in Magic Sturdy.
+    //   switch (tap_hold_keycode) {
+    //     case HOME_X:  // X + D and X + G.
+    //       if (other_keycode == HOME_D || other_keycode == KC_G) {
+    //         return true;
+    //       }
+    //       break;
+    //   }
 
-  // Also allow same-hand holds when the other key is in the rows below the
-  // alphas. I need the `% (MATRIX_ROWS / 2)` because my keyboard is split.
-  if (other_record->event.key.row % (MATRIX_ROWS / 2) >= 4) {
-    return true;
-  }
+    // Also allow same-hand holds when the other key is in the rows below the
+    // alphas. I need the `% (MATRIX_ROWS / 2)` because my keyboard is split.
+    if (other_record->event.key.row % (MATRIX_ROWS / 2) >= 4) {
+        return true;
+    }
 
-  // Otherwise, follow the opposite hands rule.
-  return achordion_opposite_hands(tap_hold_record, other_record);
+    // Otherwise, follow the opposite hands rule.
+    return achordion_opposite_hands(tap_hold_record, other_record);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  if (!process_achordion(keycode, record)) { return false; }
-  switch (keycode) {
-    case EXIT:
-      if (record->event.pressed) {
-         layer_and(((layer_state_t)1 << CBASE) | ((layer_state_t)1 << QBASE));
-         return false;
-      }
-      break;
-  }
-  return true;
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    for (uint8_t i = led_min; i < led_max; i++) {
+        switch (get_highest_layer(layer_state | default_layer_state)) {
+            case QBASE:
+                rgb_matrix_set_color(i, RGB_GREEN);
+                break;
+            case CBASE:
+                rgb_matrix_set_color(i, RGB_PURPLE);
+                break;
+            case SYM:
+                rgb_matrix_set_color(i, RGB_RED);
+                break;
+            default:
+                rgb_matrix_set_color(i, 0xFF, 0xFF, 0xFF);
+                break;
+        }
+    }
+    return false;
+}
+
+bool process_record_user(uint16_t keycode, keyrecord_t* record) {
+    if (!process_achordion(keycode, record)) {
+        return false;
+    }
+    switch (keycode) {
+        case EXIT:
+            if (record->event.pressed) {
+                layer_and(((layer_state_t)1 << CBASE) | 
+                          ((layer_state_t)1 << QBASE));
+                return false;
+            }
+            break;
+    }
+    return true;
 }
 
 void matrix_scan_user(void) {
-  achordion_task();
-//   orbital_mouse_task();
-//   select_word_task();
-//   sentence_case_task();
+    achordion_task();
+    //   orbital_mouse_task();
+    //   select_word_task();
+    //   sentence_case_task();
 }
