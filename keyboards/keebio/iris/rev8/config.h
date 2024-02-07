@@ -20,3 +20,18 @@
 #define RGB_DISABLE_WHEN_USB_SUSPENDED
 #define RGB_MATRIX_FRAMEBUFFER_EFFECTS
 #define RGB_MATRIX_KEYPRESSES
+
+#define SPLIT_LAYER_STATE_ENABLE
+
+// Unfortunately, some applications drop or misorder fast key events. This is a
+// partial fix to slow down the rate at which macros are sent.
+#define TAP_CODE_DELAY 12
+
+// Tap-hold configuration for home row mods.
+#define TAPPING_TERM 175
+#define TAPPING_TERM_PER_KEY
+#define PERMISSIVE_HOLD
+#define QUICK_TAP_TERM_PER_KEY
+
+#define ACHORDION_STREAK
+
