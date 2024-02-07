@@ -3,11 +3,13 @@
 
 #include "info_config.h"
 #include "default_keyboard.h"
+#include "features/achordion.h"
 
 enum layers {
   QBASE, // QWERTY Base Layer
   CBASE, // COLEMAK-DH Base Layer
   SYM,   // Symbol Layer
+  NAV,   // Navigation Layer
   MOU,   // Mouse Layer
   ADJ,   // Adjust Layer
 };
@@ -27,6 +29,8 @@ enum custom_keycodes {
 #define QHOME_SC LT(SYM, KC_SCLN)
 #define QHOME_Z LGUI_T(KC_Z)
 #define QHOME_SL RGUI_T(KC_SLSH)
+// Experimental: Home row mod for NAV layer.
+#define QHOME_V LT(NAV, KC_V)
 
 // Home row mods for COLEMAK-DH layer.
 #define CHOME_A LT(SYM, KC_A)
@@ -39,6 +43,48 @@ enum custom_keycodes {
 #define CHOME_O LT(SYM, KC_O)
 #define CHOME_Z LGUI_T(KC_Z)
 #define CHOME_SL RGUI_T(KC_SLSH)
+// Experimental: Home row mod for NAV layer.
+#define CHOME_D LT(NAV, KC_D)
+
+/*
+    DF(layer) - switches the default layer. The default layer is the 
+      always-active base layer that other layers stack on top of. See below for 
+      more about the default layer. This might be used to switch from QWERTY to 
+      Dvorak layout. (Note that this is a temporary switch that only persists 
+      until the keyboard loses power. To modify the default layer in a 
+      persistent way requires deeper customization, such as calling the 
+      set_single_persistent_default_layer function inside of 
+      process_record_user.)
+
+    MO(layer) - momentarily activates layer. As soon as you let go of the key, 
+      the layer is deactivated.
+
+    LM(layer, mod) - Momentarily activates layer (like MO), but with modifier(s)
+      mod active. Only supports layers 0-15. The modifiers this keycode accept 
+      are prefixed with MOD_, not KC_. These modifiers can be combined using 
+      bitwise OR, e.g. LM(_RAISE, MOD_LCTL | MOD_LALT).
+
+    LT(layer, kc) - momentarily activates layer when held, and sends kc when 
+      tapped. Only supports layers 0-15.
+
+    OSL(layer) - momentarily activates layer until the next key is pressed. 
+      See One Shot Keys for details and additional functionality.
+
+    TG(layer) - toggles layer, activating it if it's inactive and vice versa
+
+    TO(layer) - activates layer and de-activates all other layers (except your 
+      default layer). This function is special, because instead of just 
+      adding/removing one layer to your active layer stack, it will completely 
+      replace your current active layers, uniquely allowing you to replace 
+      higher layers with a lower one. This is activated on keydown (as soon as 
+      the key is pressed).
+
+    TT(layer) - Layer Tap-Toggle. If you hold the key down, layer is activated, 
+      and then is de-activated when you let go (like MO). If you repeatedly tap 
+      it, the layer will be toggled on or off (like TG). It needs 5 taps by 
+      default, but you can change this by defining TAPPING_TOGGLE -- for 
+      example, #define TAPPING_TOGGLE 2 to toggle on just two taps.
+*/
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
@@ -48,11 +94,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
      KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                               KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_DEL,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_LCTL, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                               KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
+     KC_BSPC, QHOME_A, QHOME_S, QHOME_D, QHOME_F, KC_G,                               KC_H,    QHOME_J, QHOME_K, QHOME_L, QHOME_SC,KC_QUOT,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_HOME,          KC_END,  KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
+     KC_LCTL, QHOME_Z, KC_X,    KC_C,    QHOME_V, KC_B,    KC_HOME,          KC_END,  KC_N,    KC_M,    KC_COMM, KC_DOT,  QHOME_SL,KC_RSFT,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
-                                    KC_LGUI, MO(SYM), KC_ENT,                    KC_SPC,  KC_BSPC, KC_RALT
+                                    KC_LGUI, KC_ESC,  KC_ENT,                    KC_SPC,  KC_BSPC, KC_RALT
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
@@ -62,11 +108,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
      KC_TAB,  KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                               KC_J,    KC_L,    KC_U,    KC_Y,    KC_SCLN, KC_DEL,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_LCTL, KC_A,    KC_R,    KC_S,    KC_T,    KC_G,                               KC_M,    KC_N,    KC_E,    KC_I,    KC_O,    KC_QUOT,
+     KC_BSPC, CHOME_A, CHOME_R, CHOME_S, CHOME_T, KC_G,                               KC_M,    CHOME_N, CHOME_E, CHOME_I, CHOME_O, KC_QUOT,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_D,    KC_V,    KC_HOME,          KC_END,  KC_K,    KC_H,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
+     KC_LCTL, CHOME_Z, KC_X,    KC_C,    CHOME_D, KC_V,    KC_HOME,          KC_END,  KC_K,    KC_H,    KC_COMM, KC_DOT,  CHOME_SL,KC_RSFT,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
-                                    KC_LGUI, MO(1),   KC_ENT,                    KC_SPC,  KC_BSPC, KC_RALT
+                                    KC_LGUI, KC_ESC,  KC_ENT,                    KC_SPC,  KC_BSPC, KC_RALT
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
@@ -81,6 +127,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      BL_STEP, _______, _______, _______, KC_DOWN, KC_LCBR, KC_LPRN,          KC_RPRN, KC_RCBR, KC_P1,   KC_P2,   KC_P3,   KC_MINS, _______,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
                                     _______, _______, KC_DEL,                    KC_DEL,  _______, KC_P0
+                                // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
+  ),
+
+  [NAV] = LAYOUT(
+  //┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
+     _______, _______, _______, _______, _______, _______,                            _______, _______, _______, _______, _______, _______,
+  //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
+     _______, _______, _______, _______, _______, _______,                            _______, _______, _______, _______, _______, _______,
+  //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
+     _______, _______, _______, KC_LSFT, KC_LCTL, _______,                            _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
+  //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
+     _______, _______, _______, _______, _______, _______, _______,          _______, _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,  _______,
+  //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
+                                    _______, _______, _______,                   _______, _______, _______
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
@@ -102,18 +162,100 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┐
      QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QK_BOOT,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+     EXIT,    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, EXIT,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┤
-     EXIT,    XXXXXXX, XXXXXXX, XXXXXXX, DF(QBASE),DF(CBASE),                         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, EXIT,
+     EXIT,    XXXXXXX, XXXXXXX, XXXXXXX, DF(QBASE),DF(CBASE),                      DF(CBASE),DF(QBASE), XXXXXXX, XXXXXXX, XXXXXXX, EXIT,
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,          XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+     EXIT,    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,          XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, EXIT,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
                                     XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   )
 };
 
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t* record) {
+  switch (keycode) {
+    // Increase the tapping term a little for slower ring and pinky fingers.
+    case CHOME_A:
+    case CHOME_R:
+    case CHOME_I:
+    case CHOME_O:
+    // case QHOME_A: // Same as `CHOME_A`
+    case QHOME_S:
+    case QHOME_L:
+    case QHOME_SC:
+      return TAPPING_TERM + 15;
+
+    default:
+      return TAPPING_TERM;
+  }
+}
+
+uint16_t get_quick_tap_term(uint16_t keycode, keyrecord_t* record) {
+  // If you quickly hold a tap-hold key after tapping it, the tap action is
+  // repeated. Key repeating is useful e.g. for Vim navigation keys, but can
+  // lead to missed triggers in fast typing. Here, returning 0 means we
+  // instead want to "force hold" and disable key repeating.
+  switch (keycode) {
+    case CHOME_N:
+    case CHOME_E:
+    case CHOME_I:
+    // Repeating is useful for Vim navigation keys.
+    case QHOME_J:
+    case QHOME_K:
+    case QHOME_L:
+      return QUICK_TAP_TERM;  // Enable key repeating.
+    default:
+      return 0;  // Otherwise, force hold and disable key repeating.
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+#define ACHORDION_STREAK
+uint16_t achordion_streak_timeout(uint16_t tap_hold_keycode){
+   if (IS_QK_LAYER_TAP(tap_hold_keycode)) {
+      return 0; // Disable streak detection on layer-tap keys.
+   }
+
+   // Otherwise, tap_hold_keycode is a mod-tap key.
+   uint8_t mod = mod_config(QK_MOD_TAP_GET_MODS(tap_hold_keycode));
+   if ((mod & MOD_LSFT) != 0) {
+      return 0;  // Disable for Shift mod-tap keys.
+   } else {
+      return 100;
+   }
+}
+
+uint16_t achordion_timeout(uint16_t tap_hold_keycode) {
+  return 800;  // Use a timeout of 800 ms.
+}
+
+bool achordion_chord(uint16_t tap_hold_keycode, keyrecord_t* tap_hold_record,
+                     uint16_t other_keycode, keyrecord_t* other_record) {
+  // Exceptionally consider the following chords as holds, even though they
+  // are on the same hand in Magic Sturdy.
+  //   switch (tap_hold_keycode) {
+  //     case HOME_X:  // X + D and X + G.
+  //       if (other_keycode == HOME_D || other_keycode == KC_G) {
+  //         return true;
+  //       }
+  //       break;
+  //   }
+
+  // Also allow same-hand holds when the other key is in the rows below the
+  // alphas. I need the `% (MATRIX_ROWS / 2)` because my keyboard is split.
+  if (other_record->event.key.row % (MATRIX_ROWS / 2) >= 4) {
+    return true;
+  }
+
+  // Otherwise, follow the opposite hands rule.
+  return achordion_opposite_hands(tap_hold_record, other_record);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  if (!process_achordion(keycode, record)) { return false; }
   switch (keycode) {
     case EXIT:
       if (record->event.pressed) {
@@ -123,4 +265,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       break;
   }
   return true;
+}
+
+void matrix_scan_user(void) {
+  achordion_task();
+//   orbital_mouse_task();
+//   select_word_task();
+//   sentence_case_task();
 }
